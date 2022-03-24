@@ -1,0 +1,15 @@
+[build]
+target = "armv7r-none-eabihf"
+
+[target.armv7r-none-eabihf]
+linker = "armr5-none-eabi-gcc"
+rustflags = [
+    "-C", "target-cpu=cortex-r5",
+    "-C", "link-arg=-mcpu=cortex-r5",
+    "-C", "link-arg=-mfpu=vfpv3-d16",
+    # ABI
+    "-C", "link-arg=-mfloat-abi=hard",
+    # linker script
+    "-C", "link-arg=-Wl,-T./lscripts/lscript.ld",
+]
+runner = "./qemu_runner.sh"

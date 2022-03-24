@@ -1,5 +1,9 @@
 use std::{
-    fs::File, io::BufReader, path::Path, process::Command,
+    env,
+    fs::File,
+    io::BufReader,
+    path::{Path, PathBuf},
+    process::Command,
 };
 
 fn main() {
@@ -14,15 +18,16 @@ fn main() {
     //     .expect("Failed to build a bsp");
 
     // Get a sysroot path of armr5-none-eabi-gcc
-    let sys_root = Command::new("armr5-none-eabi-gcc")
+    let sysroot = Command::new("armr5-none-eabi-gcc")
         .arg("--print-sysroot")
         .output()
         .expect("Failed to execute \"armr5-none-eabi-gcc --print-sysroot\"");
 
-    let sys_root_path = format!(
+    let sysroot_path = format!(
         "{}/usr/include",
-        String::from_utf8(sys_root.stdout).unwrap()
+        String::from_utf8(sysroot.stdout).unwrap().trim()
     );
+    println!("{:?}", sysroot_path);
 
     // Parse spfm file
     let xspfm_path =
@@ -32,8 +37,39 @@ fn main() {
     // Get a bsp inlcude path
     let bsp_include_path = xspfm.bsp_include_path;
 
-    // // Generate Rust bindings
-    // let bind_builder = bindgen::builder().header(header)
+    // Generate Rust bindings
+    let bind_builder = bindgen::Builder::default()
+        .clang_args(["-target", "armv7r-none-eabihf"])
+        .header("wrapper.h")
+        .clang_args([
+            "-I",
+            &sysroot_path,
+            "-I",
+            &bsp_include_path,
+        ])
+        .blocklist_file("*/stdio.h")
+        .blocklist_file("*/ctype.h")
+        .blocklist_file("*/string.h")
+        // .blocklist_file("*/stdarg.h")
+        // .blocklist_file("*/xil_types.h")
+        // .blocklist_file("*/bspconfig.h")
+        // .blocklist_file("*/xparameters.h")
+        // .blocklist_file("*/xparameters_ps.h")
+        .use_core()
+        .ctypes_prefix("cty")
+        .derive_copy(false)
+        .layout_tests(false)
+        .default_enum_style(bindgen::EnumVariation::Rust {
+            non_exhaustive: false,
+        })
+        .generate()
+        .expect("Failed to generate bindings");
+
+    let out_path =
+        PathBuf::from(env::var("OUT_DIR").unwrap());
+    bind_builder
+        .write_to_file(out_path.join("bindings.rs"))
+        .expect("Couldn't write biindings");
 }
 
 struct XSpfm {
