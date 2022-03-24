@@ -11,7 +11,7 @@ fn main() {
     // let xsa_path = env!("XSA_PATH");
     let xsa_path = "../../xilinx-rust/xsa_files/zcu104.xsa";
 
-    // // Generate bsp
+    // Generate bsp
     let _status = Command::new("xsct")
         .args(["./scripts/tcl/platform.tcl", &xsa_path])
         .status()
@@ -37,6 +37,9 @@ fn main() {
     // Get a bsp inlcude path
     let bsp_include_path = xspfm.bsp_include_path;
 
+    // Get a path to xpseudo_asm_armclangs.h
+    let xpseudo_asm_armclang = "./build/bsp/zynqmp_fsbl/zynqmp_fsbl_bsp/psu_cortexr5_0/libsrc/standalone_v7_5/src/arm/cortexr5/armclang/";
+
     // Generate Rust bindings
     let bind_builder = bindgen::Builder::default()
         .clang_args(["-target", "armv7r-none-eabihf"])
@@ -46,6 +49,8 @@ fn main() {
             &sysroot_path,
             "-I",
             &bsp_include_path,
+            "-I",
+            &xpseudo_asm_armclang,
         ])
         .blocklist_file("*/stdio.h")
         .blocklist_file("*/ctype.h")
