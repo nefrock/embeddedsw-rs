@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 embeddedsw-sys = { path = "./embeddedsw-sys" }
+
+[build-dependencies]
+xml-rs = "0.8"

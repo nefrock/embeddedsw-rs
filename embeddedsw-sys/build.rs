@@ -12,10 +12,10 @@ fn main() {
     let xsa_path = "../../xilinx-rust/xsa_files/zcu104.xsa";
 
     // // Generate bsp
-    // let _status = Command::new("xsct")
-    //     .args(["./scripts/tcl/platform.tcl", &xsa_path])
-    //     .status()
-    //     .expect("Failed to build a bsp");
+    let _status = Command::new("xsct")
+        .args(["./scripts/tcl/platform.tcl", &xsa_path])
+        .status()
+        .expect("Failed to build a bsp");
 
     // Get a sysroot path of armr5-none-eabi-gcc
     let sysroot = Command::new("armr5-none-eabi-gcc")

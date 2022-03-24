@@ -124,6 +124,7 @@ name = "embeddedsw-rs"
 version = "0.1.0"
 dependencies = [
  "embeddedsw-sys",
+ "xml-rs",
 ]
 
 [[package]]
