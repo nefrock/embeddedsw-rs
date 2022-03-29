@@ -11,5 +11,6 @@ rustflags = [
     "-C", "link-arg=-mfloat-abi=hard",
     # linker script
     "-C", "link-arg=-Wl,-T./lscripts/lscript.ld",
+    "-C", "link-arg=-Wl,--start-group,-lc,-lgcc,-lxil,-end-group"
 ]
 runner = "./qemu_runner.sh"
