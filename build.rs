@@ -10,7 +10,7 @@ fn main() {
     // link static library
     println!(
         "cargo:rustc-link-search=native={}",
-        xspfm.bsp_lib_path
+        "../embeddedsw-rs/embeddedsw-sys/build/bsp/export/bsp/sw/bsp/standalone_psu_cortexr5_0/bsplib/lib"
     );
     println!(
         "cargo:rustc-link-arg=-Wl,--start-group,-lc,-lgcc,-lxil,-end-group"
