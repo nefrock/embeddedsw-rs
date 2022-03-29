@@ -40,7 +40,7 @@ fn main() {
     let bsp_lib_path = Path::new(&xspfm.bsp_lib_path);
 
     // Get a path to xpseudo_asm_armclangs.h
-    let xpseudo_asm_armclang = "./build/bsp/zynqmp_fsbl/zynqmp_fsbl_bsp/psu_cortexr5_0/libsrc/standalone_v7_5/src/arm/cortexr5/armclang/";
+    let xpseudo_asm_armclang_path = "./build/bsp/zynqmp_fsbl/zynqmp_fsbl_bsp/psu_cortexr5_0/libsrc/standalone_v7_5/src/arm/cortexr5/armclang/";
 
     // Generate Rust bindings
     let bind_builder = bindgen::Builder::default()
@@ -51,6 +51,8 @@ fn main() {
             &sysroot_path,
             "-I",
             &bsp_include_path.display().to_string(),
+            "-I",
+            &xpseudo_asm_armclang_path,
         ])
         .blocklist_file("*/stdio.h")
         .blocklist_file("*/ctype.h")
@@ -76,19 +78,20 @@ fn main() {
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write biindings");
 
+    // Get a embedded-sys root path
     let pwd = Command::new("pwd")
         .output()
         .expect("Failed to exectute pwd command");
-    let root = String::from_utf8(pwd.stdout)
+    let emb_sys_root_path = String::from_utf8(pwd.stdout)
         .unwrap()
         .trim()
         .to_string();
-    println!("{}", root);
+    println!("{}", emb_sys_root_path);
 
     // Link static library
     println!(
         "cargo:rustc-link-search=native={}/{}",
-        root,
+        emb_sys_root_path,
         bsp_lib_path.strip_prefix("./").unwrap().display()
     );
     println!(
