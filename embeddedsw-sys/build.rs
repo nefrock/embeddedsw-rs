@@ -8,8 +8,8 @@ use std::{
 
 fn main() {
     // Get XSA file path
-    // let xsa_path = env!("XSA_PATH");
-    let xsa_path = "../../xilinx-rust/xsa_files/zcu104.xsa";
+    let xsa_path = env!("XSA_PATH");
+    // let xsa_path = "../../xilinx-rust/xsa_files/zcu104.xsa";
 
     // Generate bsp
     let _status = Command::new("xsct")
@@ -34,8 +34,10 @@ fn main() {
         Path::new(&"./build/bsp/export/bsp/sw/bsp.spfm");
     let xspfm = XSpfm::parse(xspfm_path);
 
-    // Get a bsp inlcude path
-    let bsp_include_path = xspfm.bsp_include_path;
+    // Get a bsp inlcude path and bsp lib path
+    let bsp_include_path =
+        Path::new(&xspfm.bsp_include_path);
+    let bsp_lib_path = Path::new(&xspfm.bsp_lib_path);
 
     // Get a path to xpseudo_asm_armclangs.h
     let xpseudo_asm_armclang = "./build/bsp/zynqmp_fsbl/zynqmp_fsbl_bsp/psu_cortexr5_0/libsrc/standalone_v7_5/src/arm/cortexr5/armclang/";
@@ -48,9 +50,7 @@ fn main() {
             "-I",
             &sysroot_path,
             "-I",
-            &bsp_include_path,
-            "-I",
-            &xpseudo_asm_armclang,
+            &bsp_include_path.display().to_string(),
         ])
         .blocklist_file("*/stdio.h")
         .blocklist_file("*/ctype.h")
@@ -75,10 +75,30 @@ fn main() {
     bind_builder
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write biindings");
+
+    let pwd = Command::new("pwd")
+        .output()
+        .expect("Failed to exectute pwd command");
+    let root = String::from_utf8(pwd.stdout)
+        .unwrap()
+        .trim()
+        .to_string();
+    println!("{}", root);
+
+    // Link static library
+    println!(
+        "cargo:rustc-link-search=native={}/{}",
+        root,
+        bsp_lib_path.strip_prefix("./").unwrap().display()
+    );
+    println!(
+        "cargo:rustc-link-arg=-Wl,--start-group,-lc,-lgcc,-lxil,-end-group"
+    );
 }
 
 struct XSpfm {
     bsp_include_path: String,
+    bsp_lib_path: String,
 }
 
 impl XSpfm {
@@ -87,6 +107,7 @@ impl XSpfm {
 
         let mut xspfm = XSpfm {
             bsp_include_path: "".to_string(),
+            bsp_lib_path: "".to_string(),
         };
 
         let file = File::open(path).unwrap();
@@ -111,6 +132,16 @@ impl XSpfm {
                                     .display(),
                                 attr.value
                             );
+                        } else if attr.name.local_name
+                            == "bspLibraryPaths"
+                        {
+                            xspfm.bsp_lib_path = format!(
+                                "{}/{}",
+                                path.parent()
+                                    .unwrap()
+                                    .display(),
+                                attr.value
+                            )
                         }
                     }
                 }
