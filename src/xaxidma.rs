@@ -1,5 +1,4 @@
 extern crate embeddedsw_sys;
-use crate::println;
 use embeddedsw_sys as esys;
 
 #[derive(Debug)]
@@ -20,12 +19,14 @@ pub enum DmaDirection {
 }
 
 #[repr(C)]
-pub struct AxiDmaConfig {
+pub struct XAxiDmaConfig {
     config: *mut esys::XAxiDma_Config,
 }
 
-impl AxiDmaConfig {
-    pub fn new(id: u32) -> Result<Self, DmaError> {
+impl XAxiDmaConfig {
+    pub fn lookup_config(
+        id: u32,
+    ) -> Result<Self, DmaError> {
         let ptr = unsafe { esys::XAxiDma_LookupConfig(id) };
         if ptr.is_null() {
             Err(DmaError::ConfigInit)
@@ -36,14 +37,14 @@ impl AxiDmaConfig {
 }
 
 #[repr(C)]
-pub struct AxiDma {
+pub struct XAxiDma {
     pub axi_dma: esys::XAxiDma,
 }
 
-impl AxiDma {
-    pub unsafe fn init(
+impl XAxiDma {
+    pub unsafe fn cfg_initialize(
         &mut self,
-        config: &mut AxiDmaConfig,
+        config: &mut XAxiDmaConfig,
     ) -> Result<(), DmaError> {
         match esys::XAxiDma_CfgInitialize(
             &mut self.axi_dma as *mut _,
@@ -58,13 +59,13 @@ impl AxiDma {
         }
     }
 
-    pub fn axi_dma_reset(&mut self) {
+    pub fn reset(&mut self) {
         unsafe {
             esys::XAxiDma_Reset(&mut self.axi_dma as *mut _)
         }
     }
 
-    pub fn axi_dma_reset_is_done(&mut self) -> bool {
+    pub fn reset_is_done(&mut self) -> bool {
         unsafe {
             match esys::XAxiDma_ResetIsDone(
                 &mut self.axi_dma as *mut _,
@@ -75,9 +76,7 @@ impl AxiDma {
         }
     }
 
-    pub fn axi_dma_pause(
-        &mut self,
-    ) -> Result<(), DmaError> {
+    pub fn pause(&mut self) -> Result<(), DmaError> {
         unsafe {
             match esys::XAxiDma_Pause(
                 &mut self.axi_dma as *mut _,
@@ -92,9 +91,7 @@ impl AxiDma {
         }
     }
 
-    pub fn axi_dma_resume(
-        &mut self,
-    ) -> Result<(), DmaError> {
+    pub fn resume(&mut self) -> Result<(), DmaError> {
         unsafe {
             match esys::XAxiDma_Resume(
                 &mut self.axi_dma as *mut _,
@@ -112,7 +109,7 @@ impl AxiDma {
         }
     }
 
-    pub fn axi_dma_busy(
+    pub fn busy(
         &mut self,
         direction: DmaDirection,
     ) -> bool {
@@ -136,7 +133,7 @@ impl AxiDma {
         }
     }
 
-    pub fn axi_simple_transfer(
+    pub fn simple_transfer(
         &mut self,
         buff_addr: usize,
         length: u32,
@@ -169,9 +166,7 @@ impl AxiDma {
         }
     }
 
-    pub fn axi_self_test(
-        &mut self,
-    ) -> Result<(), DmaError> {
+    pub fn self_test(&mut self) -> Result<(), DmaError> {
         unsafe {
             match esys::XAxiDma_Selftest(
                 &mut self.axi_dma as *mut _,
@@ -183,7 +178,7 @@ impl AxiDma {
         }
     }
 
-    unsafe fn xdma_write_reg(
+    unsafe fn write_reg(
         base_addr: u32,
         offset: u32,
         data: u32,
@@ -194,16 +189,13 @@ impl AxiDma {
         )
     }
 
-    unsafe fn xdma_read_reg(
-        base_addr: u32,
-        offset: u32,
-    ) -> u32 {
+    unsafe fn read_reg(base_addr: u32, offset: u32) -> u32 {
         core::ptr::read_volatile(
             (base_addr + offset) as *const u32,
         )
     }
 
-    pub fn axi_irq_interrupt_enable(
+    pub fn irq_interrupt_enable(
         &self,
         direction: DmaDirection,
     ) {
@@ -216,12 +208,12 @@ impl AxiDma {
             }
         };
         unsafe {
-            let rx_val = Self::xdma_read_reg(
+            let rx_val = Self::read_reg(
                 self.axi_dma.RegBase as u32
                     + (esys::XAXIDMA_RX_OFFSET * direction),
                 esys::XAXIDMA_CR_OFFSET,
             );
-            Self::xdma_write_reg(
+            Self::write_reg(
                 self.axi_dma.RegBase as u32
                     + (esys::XAXIDMA_RX_OFFSET * direction),
                 esys::XAXIDMA_CR_OFFSET,
@@ -230,7 +222,7 @@ impl AxiDma {
         }
     }
 
-    pub fn axi_irq_interrupt_disable(
+    pub fn irq_interrupt_disable(
         &self,
         direction: DmaDirection,
     ) {
@@ -243,86 +235,18 @@ impl AxiDma {
             }
         };
         unsafe {
-            let rx_val = Self::xdma_read_reg(
+            let rx_val = Self::read_reg(
                 self.axi_dma.RegBase as u32
                     + (esys::XAXIDMA_RX_OFFSET * direction),
                 esys::XAXIDMA_CR_OFFSET,
             );
-            Self::xdma_write_reg(
+            Self::write_reg(
                 self.axi_dma.RegBase as u32
                     + (esys::XAXIDMA_RX_OFFSET * direction),
                 esys::XAXIDMA_CR_OFFSET,
                 rx_val & !esys::XAXIDMA_IRQ_ALL_MASK,
             );
         }
-    }
-
-    pub fn print_registers(&self) {
-        println!("--------MM2S------------");
-        let cr_reg = unsafe {
-            Self::xdma_read_reg(
-                self.axi_dma.RegBase as u32,
-                0x00,
-            )
-        };
-        crate::println!("MM2S_DMACR : {:08x}", cr_reg);
-
-        let sr_reg = unsafe {
-            Self::xdma_read_reg(
-                self.axi_dma.RegBase as u32,
-                0x04,
-            )
-        };
-        crate::println!("MM2S_DMASR : {:08x}", sr_reg);
-
-        let sa_reg = unsafe {
-            Self::xdma_read_reg(
-                self.axi_dma.RegBase as u32,
-                0x18,
-            )
-        };
-        crate::println!("MM2S_DMASA : {:08x}", sa_reg);
-
-        let length_reg = unsafe {
-            Self::xdma_read_reg(
-                self.axi_dma.RegBase as u32,
-                0x20,
-            )
-        };
-        crate::println!("MM2S_LENGTH: {:08x}", length_reg);
-
-        println!("--------S2MM------------");
-        let cr_reg = unsafe {
-            Self::xdma_read_reg(
-                self.axi_dma.RegBase as u32,
-                0x30,
-            )
-        };
-        crate::println!("S2MM_DMACR : {:08x}", cr_reg);
-
-        let sr_reg = unsafe {
-            Self::xdma_read_reg(
-                self.axi_dma.RegBase as u32,
-                0x34,
-            )
-        };
-        crate::println!("S2MM_DMASR : {:08x}", sr_reg);
-
-        let sa_reg = unsafe {
-            Self::xdma_read_reg(
-                self.axi_dma.RegBase as u32,
-                0x48,
-            )
-        };
-        crate::println!("S2MM_DMASA : {:08x}", sa_reg);
-
-        let length_reg = unsafe {
-            Self::xdma_read_reg(
-                self.axi_dma.RegBase as u32,
-                0x58,
-            )
-        };
-        crate::println!("S2MM_LENGTH: {:08x}", length_reg);
     }
 }
 
