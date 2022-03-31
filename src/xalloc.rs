@@ -1,10 +1,10 @@
 extern crate embeddedsw_sys;
-use core::alloc::{GlobalAlloc, Layout};
+use core::alloc::{self, GlobalAlloc};
 use core::ffi::c_void;
 use embeddedsw_sys as esys;
 
 #[alloc_error_handler]
-fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
+fn alloc_error_handler(layout: alloc::Layout) -> ! {
     panic!("allocation error: {:?}", layout);
 }
 
@@ -20,14 +20,17 @@ impl XAllocator {
 }
 
 unsafe impl GlobalAlloc for XAllocator {
-    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+    unsafe fn alloc(
+        &self,
+        layout: alloc::Layout,
+    ) -> *mut u8 {
         esys::malloc(layout.size() as u32) as *mut _
     }
 
     unsafe fn dealloc(
         &self,
         ptr: *mut u8,
-        _layout: Layout,
+        _layout: alloc::Layout,
     ) {
         esys::free(ptr as *mut c_void)
     }
