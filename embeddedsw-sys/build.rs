@@ -1,18 +1,37 @@
 use std::{
     env,
-    fs::File,
-    io::BufReader,
+    fs::{self, File},
+    io::{self, BufReader, Read, Write},
     path::{Path, PathBuf},
     process::Command,
 };
 
 fn main() {
     // Get XSA file path
-    let xsa_path = env!("XSA_PATH");
+    // let xsa_path = env!("XSA_PATH");
+    let xsa_path = "/home/kikemori/rust/xilinx-rust/xsa_files/zcu104.xsa";
+
+    // Gen platform script
+    let mut platform = Platform::new();
+    let platform_path =
+        Path::new("./scripts/tcl/platform.tcl");
+
+    platform.push_feature(FeatureKind::Base);
+
+    // extra library such as xilffs
+    #[cfg(feature = "xilffs")]
+    platform.push_feature(FeatureKind::Xilffs);
+
+    platform
+        .gen_tcl_scripts(platform_path)
+        .expect("Failed to generate tcl script");
 
     // Generate bsp
     let _status = Command::new("xsct")
-        .args(["./scripts/tcl/platform.tcl", &xsa_path])
+        .args([
+            &platform_path.display().to_string(),
+            &xsa_path.to_string(),
+        ])
         .status()
         .expect("Failed to build a bsp");
 
@@ -44,7 +63,7 @@ fn main() {
     // Generate Rust bindings
     let bind_builder = bindgen::Builder::default()
         .clang_args(["-target", "armv7r-none-eabihf"])
-        .header("wrapper.h")
+        .header("wrapper_base.h")
         .clang_args([
             "-I",
             &sysroot_path,
@@ -67,7 +86,13 @@ fn main() {
         .layout_tests(false)
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: false,
-        })
+        });
+
+    #[cfg(feature = "xilffs")]
+    let bind_builder =
+        bind_builder.header("wrapper_xilffs.h");
+
+    let bind_builder = bind_builder
         .generate()
         .expect("Failed to generate bindings");
 
@@ -152,5 +177,64 @@ impl XSpfm {
             }
         }
         xspfm
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+enum FeatureKind {
+    Base,
+    Xilffs,
+}
+
+impl FeatureKind {
+    fn get_path<'a>(self) -> &'a Path {
+        match self {
+            FeatureKind::Base => {
+                Path::new("./scripts/tcl/base.tcl")
+            }
+            FeatureKind::Xilffs => {
+                Path::new("./scripts/tcl/xilffs.tcl")
+            }
+        }
+    }
+}
+
+struct Platform {
+    contents: String,
+}
+
+impl Platform {
+    fn new() -> Self {
+        Self {
+            contents: "".to_string(),
+        }
+    }
+
+    fn push_feature(&mut self, feature: FeatureKind) {
+        let contents = fs::read_to_string(
+            feature.get_path(),
+        )
+        .expect(&format!(
+            "Faild to open a feature {} file",
+            feature.get_path().display()
+        ));
+        self.contents.push_str(&contents)
+    }
+
+    fn gen_tcl_scripts(
+        &mut self,
+        path: &Path,
+    ) -> Result<(), io::Error> {
+        self.contents.push_str("platform generate");
+
+        let mut file = File::options()
+            .create(true)
+            .write(true)
+            .open(path)
+            .expect(&format!(
+                "Failed to open {}",
+                path.display()
+            ));
+        file.write_all(self.contents.as_bytes())
     }
 }

@@ -3,3 +3,4 @@ build/
 lscripts/
 dtb/
 qemu_runner.sh
+platform.tcl

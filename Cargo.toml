@@ -6,8 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["xaxidma"]
+default = []
 xaxidma = ["embeddedsw-sys/xaxidma"]
+xilffs = ["embeddedsw-sys/xilffs"]
 
 [dependencies]
 embeddedsw-sys = { path = "./embeddedsw-sys" }
