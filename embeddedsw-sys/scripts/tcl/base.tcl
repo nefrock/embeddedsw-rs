@@ -17,8 +17,4 @@ domain active {zynqmp_fsbl}
 domain active {zynqmp_pmufw}
 domain active {standalone_psu_cortexr5_0}
 
-# generate platform
-platform active $project_name
-platform generate -domains standalone_psu_cortexr5_0,zynqmp_fsbl,zynqmp_pmufw  
-platform generate
 
