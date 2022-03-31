@@ -1,0 +1,5 @@
+target/
+build/
+lscripts/
+dtb/
+qemu_runner.sh
