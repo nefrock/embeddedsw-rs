@@ -9,7 +9,6 @@ use std::{
 fn main() {
     // Get XSA file path
     let xsa_path = env!("XSA_PATH");
-    // let xsa_path = "../../xilinx-rust/xsa_files/zcu104.xsa";
 
     // Generate bsp
     let _status = Command::new("xsct")
