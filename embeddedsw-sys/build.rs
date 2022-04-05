@@ -7,6 +7,10 @@ use std::{
 };
 
 fn main() {
+    // re-run if bindings is changed
+    println!("cargo:rerun-if-env-changed=XSA_PATH");
+    println!("cargo:rerun-if-changed=build.rs");
+
     // Get XSA file path
     let xsa_path = env!("XSA_PATH");
     // let xsa_path = "/home/kikemori/rust/xilinx-rust/xsa_files/zcu104.xsa";
