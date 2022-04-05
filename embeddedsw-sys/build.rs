@@ -8,8 +8,8 @@ use std::{
 
 fn main() {
     // Get XSA file path
-    // let xsa_path = env!("XSA_PATH");
-    let xsa_path = "/home/kikemori/rust/xilinx-rust/xsa_files/zcu104.xsa";
+    let xsa_path = env!("XSA_PATH");
+    // let xsa_path = "/home/kikemori/rust/xilinx-rust/xsa_files/zcu104.xsa";
 
     // Gen platform script
     let mut platform = Platform::new();
