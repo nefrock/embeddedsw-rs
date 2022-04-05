@@ -97,27 +97,19 @@ impl FResult {
 #[repr(C)]
 #[derive(Debug)]
 pub struct FatFs {
-    fatfs: esys::FATFS,
-    path: &'static str,
+    inner: esys::FATFS,
 }
 
 impl FatFs {
-    pub unsafe fn new(path: &'static str) -> Self {
-        Self {
-            fatfs: MaybeUninit::<esys::FATFS>::uninit()
-                .assume_init(),
-            path: path,
-        }
-    }
-
     pub fn mount(
-        &mut self,
+        fatfs: &mut MaybeUninit<FatFs>,
+        path: &'static str,
         opt: FileMountOption,
     ) -> Result<(), FResult> {
         unsafe {
             match esys::f_mount(
-                &mut self.fatfs as *mut esys::FATFS,
-                self.path.as_ptr() as *const esys::TCHAR,
+                fatfs.as_mut_ptr() as *mut esys::FATFS,
+                path.as_ptr() as *const esys::TCHAR,
                 opt as u8,
             ) {
                 FRESULT::FR_OK => Ok(()),
@@ -127,14 +119,12 @@ impl FatFs {
             }
         }
     }
-}
 
-impl Drop for FatFs {
-    fn drop(&mut self) {
+    pub fn unmount(&mut self, path: &'static str) {
         unsafe {
             esys::f_mount(
                 core::ptr::null_mut::<esys::FATFS>(),
-                self.path.as_ptr() as *const _,
+                path.as_ptr() as *const _,
                 0,
             );
         }
@@ -143,22 +133,18 @@ impl Drop for FatFs {
 
 #[derive(Debug)]
 pub struct Fil {
-    fil: esys::FIL,
+    inner: esys::FIL,
 }
 
 impl Fil {
-    pub unsafe fn new() -> Self {
-        MaybeUninit::uninit().assume_init()
-    }
-
     pub fn open(
-        &mut self,
+        fil: &mut MaybeUninit<Fil>,
         path: &str,
         mode: FileAccessMode,
     ) -> Result<(), FResult> {
         unsafe {
             match esys::f_open(
-                &mut self.fil as *mut _,
+                fil.as_mut_ptr() as *mut esys::FIL,
                 path.as_ptr() as *const esys::TCHAR,
                 mode as u8,
             ) {
@@ -176,7 +162,7 @@ impl Fil {
         n: usize,
     ) -> Result<usize, FResult> {
         let br: u32 = 0;
-        let fil = &mut self.fil;
+        let fil = &mut self.inner;
         unsafe {
             match esys::f_read(
                 fil as *mut esys::FIL,
@@ -198,7 +184,7 @@ impl Fil {
         n: usize,
     ) -> Result<usize, FResult> {
         let bw: u32 = 0;
-        let fil = &mut self.fil;
+        let fil = &mut self.inner;
         unsafe {
             match esys::f_write(
                 fil as *mut esys::FIL,
@@ -216,7 +202,7 @@ impl Fil {
 
     pub fn close(&mut self) -> Result<(), FResult> {
         unsafe {
-            match esys::f_close(&mut self.fil) {
+            match esys::f_close(&mut self.inner) {
                 FRESULT::FR_OK => Ok(()),
                 fresult => {
                     Err(FResult::from_fresult(fresult))
