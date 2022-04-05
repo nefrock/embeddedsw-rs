@@ -17,7 +17,7 @@ pub struct XScuGic {
 impl XScuGic {
     pub unsafe fn cfg_initialize(
         xscugic: &mut MaybeUninit<XScuGic>,
-        config: &ScuGicConfig,
+        config: &XScuGicConfig,
         effective_addr: u32,
     ) -> Result<(), i32> {
         let status = esys::XScuGic_CfgInitialize(
@@ -165,12 +165,9 @@ pub struct XScuGicConfig {
 }
 
 impl XScuGicConfig {
-    pub fn lookup_config() -> Result<Self, ()> {
-        let config = unsafe {
-            esys::XScuGic_LookupConfig(
-                esys::XPAR_SCUGIC_0_DEVICE_ID as u16,
-            )
-        };
+    pub fn lookup_config(id: u16) -> Result<Self, ()> {
+        let config =
+            unsafe { esys::XScuGic_LookupConfig(id) };
 
         if config.is_null() {
             return Err(());
