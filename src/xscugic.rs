@@ -160,11 +160,11 @@ impl XScuGic {
 //-------------------------------------------------------------------------------------------------
 
 #[repr(C)]
-pub struct ScuGicConfig {
+pub struct XScuGicConfig {
     config: *mut esys::XScuGic_Config,
 }
 
-impl ScuGicConfig {
+impl XScuGicConfig {
     pub fn lookup_config() -> Result<Self, ()> {
         let config = unsafe {
             esys::XScuGic_LookupConfig(
