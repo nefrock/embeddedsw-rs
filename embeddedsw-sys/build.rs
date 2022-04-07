@@ -7,6 +7,10 @@ use std::{
 };
 
 fn main() {
+    // re-run if bindings is changed
+    println!("cargo:rerun-if-env-changed=XSA_PATH");
+    println!("cargo:rerun-if-changed=build.rs");
+
     // Get XSA file path
     let xsa_path = env!("XSA_PATH");
     // let xsa_path = "/home/kikemori/rust/xilinx-rust/xsa_files/zcu104.xsa";
@@ -227,14 +231,10 @@ impl Platform {
     ) -> Result<(), io::Error> {
         self.contents.push_str("platform generate");
 
-        let mut file = File::options()
-            .create(true)
-            .write(true)
-            .open(path)
-            .expect(&format!(
-                "Failed to open {}",
-                path.display()
-            ));
+        let mut file = File::create(path).expect(&format!(
+            "Failed to open {}",
+            path.display()
+        ));
         file.write_all(self.contents.as_bytes())
     }
 }
