@@ -143,7 +143,7 @@ fn main(_argc: isize, _argv: *const *const u8) -> isize {
 ## Support Xilinx Dirver library
 - xalloc.rs  
     Global allocator using Xilinx's malloc
-- xil_printf.rs
+- xil_printf.rs  
     Uart sender and useful macros.
 - xaxidma.rs  
     AXI DMA Driver. Only simple dma transfe mode
