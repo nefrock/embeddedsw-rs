@@ -231,14 +231,10 @@ impl Platform {
     ) -> Result<(), io::Error> {
         self.contents.push_str("platform generate");
 
-        let mut file = File::options()
-            .create(true)
-            .write(true)
-            .open(path)
-            .expect(&format!(
-                "Failed to open {}",
-                path.display()
-            ));
+        let mut file = File::create(path).expect(&format!(
+            "Failed to open {}",
+            path.display()
+        ));
         file.write_all(self.contents.as_bytes())
     }
 }
