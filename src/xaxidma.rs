@@ -39,7 +39,7 @@ pub enum DmaDirection {
     DeviceToDMA,
 }
 
-/// The configuration structure for AXI DMA engine.
+/// The configuration structure for AXI DMA instance.
 ///
 /// # Example
 /// ```
