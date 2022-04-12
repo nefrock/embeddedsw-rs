@@ -32,7 +32,7 @@ rustflags = [
     "-C", "link-arg=-Wl,--start-group,-lc,-lgcc,-lxil,-end-group"
 ]
 ```
-   - If you want to use a `xilffs` feature, you must add the follwing option to `cargo/config.toml`
+   - If you want to use a `xilffs` feature, you must add the follwing option to `.cargo/config.toml`
         ```toml
         rustflags = [
             ...
