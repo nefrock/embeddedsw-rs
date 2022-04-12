@@ -3,7 +3,7 @@ name = "embeddedsw-rs"
 version = "0.1.0"
 edition = "2021"
 authors = ["kazuki ikemori (kadu-v)"]
-license = ""
+license = "MIT OR Apache-2.0"
 descritpion = """
 Bindings to Xilinx's zynq driver for bearmetal applications.
 """
