@@ -43,12 +43,14 @@ impl XScuGicConfig {
 // XScuGic
 //-------------------------------------------------------------------------------------------------
 
-/// The XScuGic instance structs
+/// The XScuGic instance struct
 ///
-/// # Error
 ///
 /// # Example
 /// ```
+/// #![no_std]
+/// #![no_main]
+/// #![feature(start)]
 /// extern crate embeddedsw_rs;
 /// use core::mem::MaybeUninit;
 /// use cstr_core::CStr;
@@ -65,14 +67,14 @@ impl XScuGicConfig {
 ///
 /// static mut INTERRUPT_PROCESSED: bool = false;
 ///
-///#[panic_handler]
-///fn panic(Info: &core::panic::PanicInfo<'_>) -> ! {
-///    loop {}
-///}
+/// #[panic_handler]
+/// fn panic(Info: &core::panic::PanicInfo<'_>) -> ! {
+///     loop {}
+/// }
 ///
-///#[no_mangle]
-///#[start]
-///fn main(_argc: isize, _argv: *const *const u8) -> isize {
+/// #[no_mangle]
+/// #[start]
+/// fn main(_argc: isize, _argv: *const *const u8) -> isize {
 ///
 ///    let xconfig =  XScuGicConfig::lookup_config(INTC_DEVICE_ID).unwrap();
 ///
@@ -110,7 +112,7 @@ impl XScuGicConfig {
 ///    }
 ///
 ///    return 0;
-///}
+/// }
 ///
 /// extern "C" fn device_handler() {
 ///     println!("[Info] called device handler");
