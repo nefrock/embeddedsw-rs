@@ -84,6 +84,7 @@ fn main() {
         // .blocklist_file("*/bspconfig.h")
         // .blocklist_file("*/xparameters.h")
         // .blocklist_file("*/xparameters_ps.h")
+        // .fit_macro_constants(true)
         .use_core()
         .ctypes_prefix("cty")
         .derive_copy(false)
