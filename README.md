@@ -11,10 +11,10 @@ You can use this crate to develop baremetal application with memory safety.
 embeddedsw-rs = { git = "https://github.com/nefrock/embeddedsw-rs", branch = "master" }
 ```
 
-1. Prepare a linker script (e.g., `lscripts/lscript.ld`).
+1. Prepare a linker script (i.e., `lscripts/lscript.ld`).
 
 1. Write a following settings in `.cargo/config.toml` of your projects.
-```rust
+```toml
 [build]
 target = "armv7r-none-eabihf"
 
@@ -28,10 +28,19 @@ rustflags = [
     "-C", "link-arg=-mfloat-abi=hard",
     # linker script
     "-C", "link-arg=-Wl,-T./lscripts/lscript.ld",
+    # linker options
     "-C", "link-arg=-Wl,--start-group,-lc,-lgcc,-lxil,-end-group"
 ]
 ```
-
+   - If you want to use a `xilffs` feature, you must add the follwing option to `cargo/config.toml`
+        ```toml
+        rustflags = [
+            ...
+            # linker options
+            "-C", "link-arg=-Wl,-lxilffs",  # new!
+            "-C", "link-arg=..."
+        ] 
+        ```
 
 
 
