@@ -22,8 +22,7 @@ impl XScuGicConfig {
     /// it returns ().
     ///
     pub fn lookup_config(id: u16) -> Result<Self, ()> {
-        let config =
-            unsafe { esys::XScuGic_LookupConfig(id) };
+        let config = unsafe { esys::XScuGic_LookupConfig(id) };
 
         if config.is_null() {
             return Err(());
@@ -162,9 +161,7 @@ impl XScuGic {
             let ptr = f as *const _;
             core::mem::transmute::<
                 *const (),
-                unsafe extern "C" fn(
-                    *mut ffi::c_void,
-                ) -> (),
+                unsafe extern "C" fn(*mut ffi::c_void) -> (),
             >(ptr)
         });
         let status = unsafe {
@@ -184,57 +181,41 @@ impl XScuGic {
 
     /// This function disconnects the registerd handler corresponding to the interrupt ID.
     pub fn disconnect(&mut self, id: u32) {
-        unsafe {
-            esys::XScuGic_Disconnect(&mut self.inner, id)
-        };
+        unsafe { esys::XScuGic_Disconnect(&mut self.inner, id) };
     }
 
     /// This function enables the interrupt source provided as the id.
     pub fn enable(&mut self, id: u32) {
-        unsafe {
-            esys::XScuGic_Enable(&mut self.inner, id)
-        };
+        unsafe { esys::XScuGic_Enable(&mut self.inner, id) };
     }
 
     /// This function diables the interrupt source provided as the id.
     pub fn disable(&mut self, id: u32) {
-        unsafe {
-            esys::XScuGic_Enable(&mut self.inner, id)
-        };
+        unsafe { esys::XScuGic_Enable(&mut self.inner, id) };
     }
 
     /// This function registers the handler.
     pub fn exception_register_handler(&mut self) {
         unsafe {
-            let xscu_interrupt_handler = Some(
-                esys::XScuGic_InterruptHandler as *const _,
-            )
-            .map(|f| {
-                core::mem::transmute::<
-                    *const (),
-                    unsafe extern "C" fn(
-                        *mut ffi::c_void,
-                    )
-                        -> (),
-                >(f)
-            });
+            let xscu_interrupt_handler =
+                Some(esys::XScuGic_InterruptHandler as *const _).map(|f| {
+                    core::mem::transmute::<
+                        *const (),
+                        unsafe extern "C" fn(*mut ffi::c_void) -> (),
+                    >(f)
+                });
 
             esys::Xil_ExceptionRegisterHandler(
                 esys::XIL_EXCEPTION_ID_INT,
                 xscu_interrupt_handler,
-                &mut self.inner as *mut esys::XScuGic
-                    as *mut _,
+                &mut self.inner as *mut esys::XScuGic as *mut _,
             )
         }
     }
 
     /// This function remove the registerd handler.
     pub fn exception_remove_handler(&self) {
-        unsafe {
-            esys::Xil_ExceptionRemoveHandler(
-                esys::XIL_EXCEPTION_ID_INT,
-            )
-        };
+        unsafe { esys::Xil_ExceptionRemoveHandler(esys::XIL_EXCEPTION_ID_INT) };
     }
 
     #[inline(always)]
@@ -248,11 +229,7 @@ impl XScuGic {
     }
 
     #[inline(always)]
-    unsafe fn write_reg(
-        base_addr: u32,
-        offset: u32,
-        data: u32,
-    ) {
+    unsafe fn write_reg(base_addr: u32, offset: u32, data: u32) {
         Self::xil_out32(base_addr + offset, data)
     }
 
@@ -265,15 +242,8 @@ impl XScuGic {
     #[inline(always)]
     pub fn disable_fiq(&self) {
         unsafe {
-            let reg = Self::read_reg(
-                esys::XPAR_PSU_RCPU_GIC_BASEADDR,
-                0,
-            );
-            Self::write_reg(
-                esys::XPAR_PSU_RCPU_GIC_BASEADDR,
-                0,
-                reg & !8,
-            );
+            let reg = Self::read_reg(esys::XPAR_PSU_RCPU_GIC_BASEADDR, 0);
+            Self::write_reg(esys::XPAR_PSU_RCPU_GIC_BASEADDR, 0, reg & !8);
         }
     }
 }

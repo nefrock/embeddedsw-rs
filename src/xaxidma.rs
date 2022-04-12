@@ -81,9 +81,7 @@ impl XAxiDmaConfig {
     /// If this function cannot find device configuration,
     /// it returns DmaError variants for configuration initalize.
     ///
-    pub fn lookup_config(
-        id: u32,
-    ) -> Result<Self, DmaError> {
+    pub fn lookup_config(id: u32) -> Result<Self, DmaError> {
         let ptr = unsafe { esys::XAxiDma_LookupConfig(id) };
         if ptr.is_null() {
             Err(DmaError::ConfigInit)
@@ -171,9 +169,7 @@ impl XAxiDma {
         } as u32
         {
             esys::XST_SUCCESS => Ok(()),
-            esys::XST_INVALID_PARAM => {
-                Err(DmaError::InvalidParam)
-            }
+            esys::XST_INVALID_PARAM => Err(DmaError::InvalidParam),
             _ => Err(DmaError::Unknown),
         }
     }
@@ -181,17 +177,13 @@ impl XAxiDma {
     /// This function resets both TX and RX channels of a DMA instance.
     /// If you reset one channel by this function, the whole AXI DMA instance is reseted.
     pub fn reset(&mut self) {
-        unsafe {
-            esys::XAxiDma_Reset(&mut self.inner as *mut _)
-        }
+        unsafe { esys::XAxiDma_Reset(&mut self.inner as *mut _) }
     }
 
     /// This function checks whether rest is done.
     pub fn reset_is_done(&mut self) -> bool {
         unsafe {
-            match esys::XAxiDma_ResetIsDone(
-                &mut self.inner as *mut _,
-            ) {
+            match esys::XAxiDma_ResetIsDone(&mut self.inner as *mut _) {
                 0 => false,
                 _ => true,
             }
@@ -207,14 +199,9 @@ impl XAxiDma {
     ///   it returns DMAError variants for Unknown.
     pub fn pause(&mut self) -> Result<(), DmaError> {
         unsafe {
-            match esys::XAxiDma_Pause(
-                &mut self.inner as *mut _,
-            ) as u32
-            {
+            match esys::XAxiDma_Pause(&mut self.inner as *mut _) as u32 {
                 esys::XST_SUCCESS => Ok(()),
-                esys::XST_NOT_SGDMA => {
-                    Err(DmaError::NotSGDMA)
-                }
+                esys::XST_NOT_SGDMA => Err(DmaError::NotSGDMA),
                 _ => Err(DmaError::Unknown),
             }
         }
@@ -229,34 +216,20 @@ impl XAxiDma {
     ///   it returns DMAError variants for Unknown.
     pub fn resume(&mut self) -> Result<(), DmaError> {
         unsafe {
-            match esys::XAxiDma_Resume(
-                &mut self.inner as *mut _,
-            ) as u32
-            {
+            match esys::XAxiDma_Resume(&mut self.inner as *mut _) as u32 {
                 esys::XST_SUCCESS => Ok(()),
-                esys::XST_NOT_SGDMA => {
-                    Err(DmaError::NotSGDMA)
-                }
-                esys::XST_DMA_ERROR => {
-                    Err(DmaError::Channel)
-                }
+                esys::XST_NOT_SGDMA => Err(DmaError::NotSGDMA),
+                esys::XST_DMA_ERROR => Err(DmaError::Channel),
                 _ => Err(DmaError::Unknown),
             }
         }
     }
 
     /// This function checks whether the DMA instance  is busy.
-    pub fn busy(
-        &mut self,
-        direction: DmaDirection,
-    ) -> bool {
+    pub fn busy(&mut self, direction: DmaDirection) -> bool {
         let direction = match direction {
-            DmaDirection::DMAToDevice => {
-                esys::XAXIDMA_DMA_TO_DEVICE
-            }
-            DmaDirection::DeviceToDMA => {
-                esys::XAXIDMA_DEVICE_TO_DMA
-            }
+            DmaDirection::DMAToDevice => esys::XAXIDMA_DMA_TO_DEVICE,
+            DmaDirection::DeviceToDMA => esys::XAXIDMA_DEVICE_TO_DMA,
         };
 
         unsafe {
@@ -283,12 +256,8 @@ impl XAxiDma {
         direction: DmaDirection,
     ) -> Result<(), DmaError> {
         let direction = match direction {
-            DmaDirection::DMAToDevice => {
-                esys::XAXIDMA_DMA_TO_DEVICE
-            }
-            DmaDirection::DeviceToDMA => {
-                esys::XAXIDMA_DEVICE_TO_DMA
-            }
+            DmaDirection::DMAToDevice => esys::XAXIDMA_DMA_TO_DEVICE,
+            DmaDirection::DeviceToDMA => esys::XAXIDMA_DEVICE_TO_DMA,
         };
         unsafe {
             match esys::XAxiDma_SimpleTransfer(
@@ -298,12 +267,8 @@ impl XAxiDma {
                 direction as i32,
             ) {
                 esys::XST_SUCCESS => Ok(()),
-                esys::XST_FAILURE => {
-                    Err(DmaError::Submisson)
-                }
-                esys::XST_INVALID_PARAM => {
-                    Err(DmaError::InvalidParam)
-                }
+                esys::XST_FAILURE => Err(DmaError::Submisson),
+                esys::XST_INVALID_PARAM => Err(DmaError::InvalidParam),
                 _ => Err(DmaError::Unknown),
             }
         }
@@ -312,45 +277,26 @@ impl XAxiDma {
     /// This function runs a self-test on the driver/device.
     pub fn self_test(&mut self) -> Result<(), DmaError> {
         unsafe {
-            match esys::XAxiDma_Selftest(
-                &mut self.inner as *mut _,
-            ) as u32
-            {
+            match esys::XAxiDma_Selftest(&mut self.inner as *mut _) as u32 {
                 esys::XST_SUCCESS => Ok(()),
                 _ => Err(DmaError::Unknown),
             }
         }
     }
 
-    unsafe fn write_reg(
-        base_addr: u32,
-        offset: u32,
-        data: u32,
-    ) {
-        core::ptr::write_volatile(
-            (base_addr + offset) as *mut u32,
-            data,
-        )
+    unsafe fn write_reg(base_addr: u32, offset: u32, data: u32) {
+        core::ptr::write_volatile((base_addr + offset) as *mut u32, data)
     }
 
     unsafe fn read_reg(base_addr: u32, offset: u32) -> u32 {
-        core::ptr::read_volatile(
-            (base_addr + offset) as *const u32,
-        )
+        core::ptr::read_volatile((base_addr + offset) as *const u32)
     }
 
     /// This function enables IRQ interrupt.
-    pub fn irq_interrupt_enable(
-        &self,
-        direction: DmaDirection,
-    ) {
+    pub fn irq_interrupt_enable(&self, direction: DmaDirection) {
         let direction = match direction {
-            DmaDirection::DMAToDevice => {
-                esys::XAXIDMA_DMA_TO_DEVICE
-            }
-            DmaDirection::DeviceToDMA => {
-                esys::XAXIDMA_DEVICE_TO_DMA
-            }
+            DmaDirection::DMAToDevice => esys::XAXIDMA_DMA_TO_DEVICE,
+            DmaDirection::DeviceToDMA => esys::XAXIDMA_DEVICE_TO_DMA,
         };
         unsafe {
             let rx_val = Self::read_reg(
@@ -368,17 +314,10 @@ impl XAxiDma {
     }
 
     /// This function disables IRQ interrupt.
-    pub fn irq_interrupt_disable(
-        &self,
-        direction: DmaDirection,
-    ) {
+    pub fn irq_interrupt_disable(&self, direction: DmaDirection) {
         let direction = match direction {
-            DmaDirection::DMAToDevice => {
-                esys::XAXIDMA_DMA_TO_DEVICE
-            }
-            DmaDirection::DeviceToDMA => {
-                esys::XAXIDMA_DEVICE_TO_DMA
-            }
+            DmaDirection::DMAToDevice => esys::XAXIDMA_DMA_TO_DEVICE,
+            DmaDirection::DeviceToDMA => esys::XAXIDMA_DEVICE_TO_DMA,
         };
         unsafe {
             let rx_val = Self::read_reg(

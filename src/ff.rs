@@ -60,10 +60,8 @@ pub enum FResult {
     FTimeOut = FRESULT::FR_TIMEOUT as u32,
     FLocked = FRESULT::FR_LOCKED as u32,
     FNotEnoughCore = FRESULT::FR_NOT_ENOUGH_CORE as u32,
-    FTooManyOpenFiles =
-        FRESULT::FR_TOO_MANY_OPEN_FILES as u32,
-    FInvalidParameter =
-        FRESULT::FR_INVALID_PARAMETER as u32,
+    FTooManyOpenFiles = FRESULT::FR_TOO_MANY_OPEN_FILES as u32,
+    FInvalidParameter = FRESULT::FR_INVALID_PARAMETER as u32,
 }
 
 impl FResult {
@@ -75,38 +73,20 @@ impl FResult {
             FRESULT::FR_NOT_READY => FResult::FNotReady,
             FRESULT::FR_NO_FILE => FResult::FNoFile,
             FRESULT::FR_NO_PATH => FResult::FNoPath,
-            FRESULT::FR_INVALID_NAME => {
-                FResult::FInvalidName
-            }
+            FRESULT::FR_INVALID_NAME => FResult::FInvalidName,
             FRESULT::FR_DENIED => FResult::FDenied,
             FRESULT::FR_EXIST => FResult::FExist,
-            FRESULT::FR_INVALID_OBJECT => {
-                FResult::FInvalidObject
-            }
-            FRESULT::FR_WRITE_PROTECTED => {
-                FResult::FWriteProtected
-            }
-            FRESULT::FR_INVALID_DRIVE => {
-                FResult::FInvalidDrive
-            }
+            FRESULT::FR_INVALID_OBJECT => FResult::FInvalidObject,
+            FRESULT::FR_WRITE_PROTECTED => FResult::FWriteProtected,
+            FRESULT::FR_INVALID_DRIVE => FResult::FInvalidDrive,
             FRESULT::FR_NOT_ENABLED => FResult::FNotEnabled,
-            FRESULT::FR_NO_FILESYSTEM => {
-                FResult::FNoFilesystem
-            }
-            FRESULT::FR_MKFS_ABORTED => {
-                FResult::FMfksAborted
-            }
+            FRESULT::FR_NO_FILESYSTEM => FResult::FNoFilesystem,
+            FRESULT::FR_MKFS_ABORTED => FResult::FMfksAborted,
             FRESULT::FR_TIMEOUT => FResult::FTimeOut,
             FRESULT::FR_LOCKED => FResult::FLocked,
-            FRESULT::FR_NOT_ENOUGH_CORE => {
-                FResult::FNotEnoughCore
-            }
-            FRESULT::FR_TOO_MANY_OPEN_FILES => {
-                FResult::FTooManyOpenFiles
-            }
-            FRESULT::FR_INVALID_PARAMETER => {
-                FResult::FInvalidParameter
-            }
+            FRESULT::FR_NOT_ENOUGH_CORE => FResult::FNotEnoughCore,
+            FRESULT::FR_TOO_MANY_OPEN_FILES => FResult::FTooManyOpenFiles,
+            FRESULT::FR_INVALID_PARAMETER => FResult::FInvalidParameter,
         }
     }
 }
@@ -221,9 +201,7 @@ impl FatFs {
                 opt as u8,
             ) {
                 FRESULT::FR_OK => Ok(()),
-                fresult => {
-                    Err(FResult::from_fresult(fresult))
-                }
+                fresult => Err(FResult::from_fresult(fresult)),
             }
         }
     }
@@ -286,9 +264,7 @@ impl Fil {
                 mode as u8,
             ) {
                 FRESULT::FR_OK => Ok(()),
-                fresult => {
-                    Err(FResult::from_fresult(fresult))
-                }
+                fresult => Err(FResult::from_fresult(fresult)),
             }
         }
     }
@@ -321,9 +297,7 @@ impl Fil {
                 addr_of!(br) as *mut u32,
             ) {
                 FRESULT::FR_OK => Ok(br as usize),
-                fresult => {
-                    Err(FResult::from_fresult(fresult))
-                }
+                fresult => Err(FResult::from_fresult(fresult)),
             }
         }
     }
@@ -341,11 +315,7 @@ impl Fil {
     ///
     /// please see [Fatfs](http://elm-chan.org/fsw/ff/doc/rc.html#de) library to get more detail of this bindings.
     ///
-    pub fn write(
-        &mut self,
-        buff: &[u8],
-        n: usize,
-    ) -> Result<usize, FResult> {
+    pub fn write(&mut self, buff: &[u8], n: usize) -> Result<usize, FResult> {
         let bw: u32 = 0;
         let fil = &mut self.inner;
         unsafe {
@@ -356,9 +326,7 @@ impl Fil {
                 addr_of!(bw) as *mut u32,
             ) {
                 FRESULT::FR_OK => Ok(bw as usize),
-                fresult => {
-                    Err(FResult::from_fresult(fresult))
-                }
+                fresult => Err(FResult::from_fresult(fresult)),
             }
         }
     }
@@ -379,9 +347,7 @@ impl Fil {
         unsafe {
             match esys::f_close(&mut self.inner) {
                 FRESULT::FR_OK => Ok(()),
-                fresult => {
-                    Err(FResult::from_fresult(fresult))
-                }
+                fresult => Err(FResult::from_fresult(fresult)),
             }
         }
     }

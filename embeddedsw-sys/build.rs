@@ -7,18 +7,13 @@ use std::{
 };
 
 fn main() {
-    // re-run if bindings is changed
-    println!("cargo:rerun-if-env-changed=XSA_PATH");
-    println!("cargo:rerun-if-changed=build.rs");
-
     // Get XSA file path
     let xsa_path = env!("XSA_PATH");
     // let xsa_path = "/home/kikemori/rust/xilinx-rust/xsa_files/zcu104.xsa";
 
     // Gen platform script
     let mut platform = Platform::new();
-    let platform_path =
-        Path::new("./scripts/tcl/platform.tcl");
+    let platform_path = Path::new("./scripts/tcl/platform.tcl");
 
     platform.push_feature(FeatureKind::Base);
 
@@ -32,10 +27,7 @@ fn main() {
 
     // Generate bsp
     let _status = Command::new("xsct")
-        .args([
-            &platform_path.display().to_string(),
-            &xsa_path.to_string(),
-        ])
+        .args([&platform_path.display().to_string(), &xsa_path.to_string()])
         .status()
         .expect("Failed to build a bsp");
 
@@ -52,13 +44,11 @@ fn main() {
     println!("{:?}", sysroot_path);
 
     // Parse spfm file
-    let xspfm_path =
-        Path::new(&"./build/bsp/export/bsp/sw/bsp.spfm");
+    let xspfm_path = Path::new(&"./build/bsp/export/bsp/sw/bsp.spfm");
     let xspfm = XSpfm::parse(xspfm_path);
 
     // Get a bsp inlcude path and bsp lib path
-    let bsp_include_path =
-        Path::new(&xspfm.bsp_include_path);
+    let bsp_include_path = Path::new(&xspfm.bsp_include_path);
     let bsp_lib_path = Path::new(&xspfm.bsp_lib_path);
 
     // Get a path to xpseudo_asm_armclangs.h
@@ -94,15 +84,13 @@ fn main() {
         });
 
     #[cfg(feature = "xilffs")]
-    let bind_builder =
-        bind_builder.header("wrapper_xilffs.h");
+    let bind_builder = bind_builder.header("wrapper_xilffs.h");
 
     let bind_builder = bind_builder
         .generate()
         .expect("Failed to generate bindings");
 
-    let out_path =
-        PathBuf::from(env::var("OUT_DIR").unwrap());
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
     bind_builder
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write biindings");
@@ -111,10 +99,8 @@ fn main() {
     let pwd = Command::new("pwd")
         .output()
         .expect("Failed to exectute pwd command");
-    let emb_sys_root_path = String::from_utf8(pwd.stdout)
-        .unwrap()
-        .trim()
-        .to_string();
+    let emb_sys_root_path =
+        String::from_utf8(pwd.stdout).unwrap().trim().to_string();
     println!("{}", emb_sys_root_path);
 
     // Link static library
@@ -126,6 +112,9 @@ fn main() {
     println!(
         "cargo:rustc-link-arg=-Wl,--start-group,-lc,-lgcc,-lxil,-end-group"
     );
+
+    // re-run if build.rs is changed
+    println!("cargo:rerun-if-changed=build.rs");
 }
 
 struct XSpfm {
@@ -149,29 +138,19 @@ impl XSpfm {
         for e in parser {
             match e {
                 Ok(XmlEvent::StartElement {
-                    name,
-                    attributes,
-                    ..
+                    name, attributes, ..
                 }) if name.local_name == "os" => {
                     for attr in attributes {
-                        if attr.name.local_name
-                            == "bspIncludePaths"
-                        {
+                        if attr.name.local_name == "bspIncludePaths" {
                             xspfm.bsp_include_path = format!(
                                 "{}/{}",
-                                path.parent()
-                                    .unwrap()
-                                    .display(),
+                                path.parent().unwrap().display(),
                                 attr.value
                             );
-                        } else if attr.name.local_name
-                            == "bspLibraryPaths"
-                        {
+                        } else if attr.name.local_name == "bspLibraryPaths" {
                             xspfm.bsp_lib_path = format!(
                                 "{}/{}",
-                                path.parent()
-                                    .unwrap()
-                                    .display(),
+                                path.parent().unwrap().display(),
                                 attr.value
                             )
                         }
@@ -194,12 +173,8 @@ enum FeatureKind {
 impl FeatureKind {
     fn get_path<'a>(self) -> &'a Path {
         match self {
-            FeatureKind::Base => {
-                Path::new("./scripts/tcl/base.tcl")
-            }
-            FeatureKind::Xilffs => {
-                Path::new("./scripts/tcl/xilffs.tcl")
-            }
+            FeatureKind::Base => Path::new("./scripts/tcl/base.tcl"),
+            FeatureKind::Xilffs => Path::new("./scripts/tcl/xilffs.tcl"),
         }
     }
 }
@@ -216,26 +191,18 @@ impl Platform {
     }
 
     fn push_feature(&mut self, feature: FeatureKind) {
-        let contents = fs::read_to_string(
-            feature.get_path(),
-        )
-        .expect(&format!(
+        let contents = fs::read_to_string(feature.get_path()).expect(&format!(
             "Faild to open a feature {} file",
             feature.get_path().display()
         ));
         self.contents.push_str(&contents)
     }
 
-    fn gen_tcl_scripts(
-        &mut self,
-        path: &Path,
-    ) -> Result<(), io::Error> {
+    fn gen_tcl_scripts(&mut self, path: &Path) -> Result<(), io::Error> {
         self.contents.push_str("platform generate");
 
-        let mut file = File::create(path).expect(&format!(
-            "Failed to open {}",
-            path.display()
-        ));
+        let mut file = File::create(path)
+            .expect(&format!("Failed to open {}", path.display()));
         file.write_all(self.contents.as_bytes())
     }
 }

@@ -20,18 +20,11 @@ impl XAllocator {
 }
 
 unsafe impl GlobalAlloc for XAllocator {
-    unsafe fn alloc(
-        &self,
-        layout: alloc::Layout,
-    ) -> *mut u8 {
+    unsafe fn alloc(&self, layout: alloc::Layout) -> *mut u8 {
         esys::malloc(layout.size() as u32) as *mut _
     }
 
-    unsafe fn dealloc(
-        &self,
-        ptr: *mut u8,
-        _layout: alloc::Layout,
-    ) {
+    unsafe fn dealloc(&self, ptr: *mut u8, _layout: alloc::Layout) {
         esys::free(ptr as *mut c_void)
     }
 }
