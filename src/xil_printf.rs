@@ -20,7 +20,7 @@ macro_rules! println {
 #[derive(Debug)]
 struct UartWriter;
 
-fn _print(args: fmt::Arguments) {
+pub fn _print(args: fmt::Arguments) {
     let mut writer = UartWriter {};
     writer.write_fmt(args).unwrap();
 }
