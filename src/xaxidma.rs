@@ -163,10 +163,12 @@ impl XAxiDma {
         xaxidma: &mut MaybeUninit<XAxiDma>,
         config: &mut XAxiDmaConfig,
     ) -> Result<(), DmaError> {
-        match esys::XAxiDma_CfgInitialize(
-            self.as_mut_ptr() as *mut XAxiDma,
-            config.config,
-        ) as u32
+        match unsafe {
+            esys::XAxiDma_CfgInitialize(
+                xaxidma.as_mut_ptr() as *mut esys::XAxiDma,
+                config.config,
+            )
+        } as u32
         {
             esys::XST_SUCCESS => Ok(()),
             esys::XST_INVALID_PARAM => {
@@ -180,7 +182,7 @@ impl XAxiDma {
     /// If you reset one channel by this function, the whole AXI DMA instance is reseted.
     pub fn reset(&mut self) {
         unsafe {
-            esys::XAxiDma_Reset(&mut self.axi_dma as *mut _)
+            esys::XAxiDma_Reset(&mut self.inner as *mut _)
         }
     }
 
@@ -188,7 +190,7 @@ impl XAxiDma {
     pub fn reset_is_done(&mut self) -> bool {
         unsafe {
             match esys::XAxiDma_ResetIsDone(
-                &mut self.axi_dma as *mut _,
+                &mut self.inner as *mut _,
             ) {
                 0 => false,
                 _ => true,
@@ -206,7 +208,7 @@ impl XAxiDma {
     pub fn pause(&mut self) -> Result<(), DmaError> {
         unsafe {
             match esys::XAxiDma_Pause(
-                &mut self.axi_dma as *mut _,
+                &mut self.inner as *mut _,
             ) as u32
             {
                 esys::XST_SUCCESS => Ok(()),
@@ -228,7 +230,7 @@ impl XAxiDma {
     pub fn resume(&mut self) -> Result<(), DmaError> {
         unsafe {
             match esys::XAxiDma_Resume(
-                &mut self.axi_dma as *mut _,
+                &mut self.inner as *mut _,
             ) as u32
             {
                 esys::XST_SUCCESS => Ok(()),
@@ -259,7 +261,7 @@ impl XAxiDma {
 
         unsafe {
             match esys::XAxiDma_Busy(
-                &mut self.axi_dma as *mut _,
+                &mut self.inner as *mut _,
                 direction as i32,
             ) {
                 0 => false,
@@ -290,7 +292,7 @@ impl XAxiDma {
         };
         unsafe {
             match esys::XAxiDma_SimpleTransfer(
-                &mut self.axi_dma as *mut _,
+                &mut self.inner as *mut _,
                 buff_addr,
                 length,
                 direction as i32,
@@ -311,7 +313,7 @@ impl XAxiDma {
     pub fn self_test(&mut self) -> Result<(), DmaError> {
         unsafe {
             match esys::XAxiDma_Selftest(
-                &mut self.axi_dma as *mut _,
+                &mut self.inner as *mut _,
             ) as u32
             {
                 esys::XST_SUCCESS => Ok(()),
@@ -352,12 +354,12 @@ impl XAxiDma {
         };
         unsafe {
             let rx_val = Self::read_reg(
-                self.axi_dma.RegBase as u32
+                self.inner.RegBase as u32
                     + (esys::XAXIDMA_RX_OFFSET * direction),
                 esys::XAXIDMA_CR_OFFSET,
             );
             Self::write_reg(
-                self.axi_dma.RegBase as u32
+                self.inner.RegBase as u32
                     + (esys::XAXIDMA_RX_OFFSET * direction),
                 esys::XAXIDMA_CR_OFFSET,
                 rx_val | esys::XAXIDMA_IRQ_ALL_MASK,
@@ -380,12 +382,12 @@ impl XAxiDma {
         };
         unsafe {
             let rx_val = Self::read_reg(
-                self.axi_dma.RegBase as u32
+                self.inner.RegBase as u32
                     + (esys::XAXIDMA_RX_OFFSET * direction),
                 esys::XAXIDMA_CR_OFFSET,
             );
             Self::write_reg(
-                self.axi_dma.RegBase as u32
+                self.inner.RegBase as u32
                     + (esys::XAXIDMA_RX_OFFSET * direction),
                 esys::XAXIDMA_CR_OFFSET,
                 rx_val & !esys::XAXIDMA_IRQ_ALL_MASK,
