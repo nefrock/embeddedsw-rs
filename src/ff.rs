@@ -3,6 +3,12 @@ use core::ptr::addr_of;
 use core::{ffi::c_void, mem::*};
 use embeddedsw_sys::{self as esys, FRESULT};
 
+//-------------------------------------------------------------------------------------------------
+// Enumerates for file access modes
+//-------------------------------------------------------------------------------------------------
+
+/// Enumrates for file access modes
+/// Please see [Fatfs library](http://elm-chan.org/fsw/ff/doc/open.html) to get a more information.
 #[repr(u32)]
 #[derive(Debug, Copy, Clone)]
 pub enum FileAccessMode {
@@ -15,13 +21,24 @@ pub enum FileAccessMode {
     OpenApend = esys::FA_OPEN_APPEND,
 }
 
+//-------------------------------------------------------------------------------------------------
+// Enumerates for file mount options
+//-------------------------------------------------------------------------------------------------
+
+/// Enumerates for file mount options
+/// Please see [Fatfs library](http://elm-chan.org/fsw/ff/doc/open.html) to get more information.
 #[repr(u8)]
 pub enum FileMountOption {
     Delayed = 0,
     Immediately = 1,
 }
 
-///
+//-------------------------------------------------------------------------------------------------
+// Enumerates for file
+//-------------------------------------------------------------------------------------------------
+
+/// Enumerates for Return values.
+/// Please see [Fatfs library](http://elm-chan.org/fsw/ff/doc/rc.html#de) to get more information.
 #[repr(u32)]
 #[derive(Debug, Clone, Copy)]
 pub enum FResult {
@@ -94,6 +111,80 @@ impl FResult {
     }
 }
 
+//-------------------------------------------------------------------------------------------------
+// FatFs struct
+//-------------------------------------------------------------------------------------------------
+
+/// The FatFs struct
+///
+/// # Example
+/// ```
+/// #![no_std]
+/// #![no_main]
+/// #![feature(start)]
+///
+/// extern crate embeddedsw_rs;
+/// use core::mem::MaybeUninit;
+/// use embeddedsw_rs as xemb;
+/// use xemb::{
+///     ff::{FileAccessMode::*, FileMountOption::*, *},
+///     print, println,
+/// };
+///
+/// # #[panic_handler]
+/// # fn panic(_panic: &core::panic::PanicInfo<'_>) -> ! {
+/// #    loop {}
+/// # }
+///
+/// #[no_mangle]
+/// #[start]
+/// fn main(_argc: isize, _argv: *const *const u8) -> isize {
+///
+///     // Mount Logical Drive
+///     let path = "0:/\0";
+///     let opt = Immediately;
+///     let mut fatfs = MaybeUninit::<FatFs>::uninit();
+///     if let Err(e) = FatFs::mount(&mut fatfs, path, opt) {
+///         println!("[Error] {:?}", e);
+///         return 0;
+///     }
+///     let mut fatfs = unsafe { fatfs.assume_init() };
+///
+///     // Open the test.dat file
+///     let fname = "some.file\0";
+///     let mode = Read;
+///     let mut fil = MaybeUninit::<Fil>::uninit();
+///     if let Err(e) =  Fil::open(&mut fil, fname, mode) {
+///        println!("[Error] {:?}", e);
+///        return 0;
+///     }
+///     let mut fil = unsafe { fil.assume_init() };
+///
+///     // Read contents in the some.file
+///     let mut buff = [2; 124];
+///     let n = 10;
+///     if let Err(e) = fil.read(&mut buff, n) {
+///         println!("[Error] {:?}", e);
+///         return 0;
+///     } else {
+///         // print the 10 bytes that are read by read() function
+///         for i in 0..n {
+///             println!("{}", buff[i] as char);
+///         }
+///     }
+///
+///     // Close the test.dat and unmount the logical volume
+///     if let Err(fresult) = fil.close() {
+///         println!("close file: {:?}", fresult);
+///         return 0;
+///     }
+///
+///     fatfs.unmount(path);
+///
+///     println!("Scucessfully Read SD Card Test");
+///     return 0;
+/// }
+/// ```
 #[repr(C)]
 #[derive(Debug)]
 pub struct FatFs {
@@ -101,7 +192,24 @@ pub struct FatFs {
 }
 
 impl FatFs {
-    pub fn mount(
+    /// This functions mount a logical volume
+    ///
+    /// # Errors
+    /// If this function cannot mount a logical volume,
+    /// it returns one of the following FResult variants.
+    /// - FOk
+    /// - FInvalidDrive
+    /// - FDiskErr
+    /// - FNotEnabled
+    /// - FNoFileSystem
+    ///
+    /// please see [Fatfs](http://elm-chan.org/fsw/ff/doc/rc.html#de) library to get more detail of this bindings.
+    ///
+    /// # Safety
+    /// str of path must be null-terminated.
+    /// If non null-terminated str is passed on to the argument of path,
+    /// this function hangs.
+    pub unsafe fn mount(
         fatfs: &mut MaybeUninit<FatFs>,
         path: &'static str,
         opt: FileMountOption,
@@ -120,6 +228,7 @@ impl FatFs {
         }
     }
 
+    /// This function unmount a logical volume
     pub fn unmount(&mut self, path: &'static str) {
         unsafe {
             esys::f_mount(
@@ -131,13 +240,41 @@ impl FatFs {
     }
 }
 
+///
 #[derive(Debug)]
 pub struct Fil {
     inner: esys::FIL,
 }
 
 impl Fil {
-    pub fn open(
+    /// This function opens a file
+    ///
+    /// If this function cannot open a logical volume,
+    /// it returns one of the following FResult variants.
+    /// - FOk
+    /// - FIntErr
+    /// - FNotReady
+    /// - FNoPath
+    /// - FInvalidName
+    /// - FDenied
+    /// - FInvalidObject
+    /// - FWriteProtected
+    /// - FInvalidDrive
+    /// - FNotEnabled
+    /// - FNoFileSystem
+    /// - FTimeout
+    /// - FLocked
+    /// - FNotEnoughCore
+    /// - FTooManyOpenFiles
+    ///
+    /// please see [Fatfs](http://elm-chan.org/fsw/ff/doc/rc.html#de) library to get more detail of this bindings.
+    ///
+    ///
+    /// # Safety
+    /// str of path must be null-terminated.
+    /// If no null-terminated str is passed on to the argument of path,
+    /// this function hangs.
+    pub unsafe fn open(
         fil: &mut MaybeUninit<Fil>,
         path: &str,
         mode: FileAccessMode,
@@ -156,6 +293,19 @@ impl Fil {
         }
     }
 
+    /// This function reads a contents of a file.
+    ///
+    /// If this function cannot read a logical volume,
+    /// it returns one of the following FResult variants.
+    /// - FOk
+    /// - FDiskErr
+    /// - FIntErr
+    /// - FDenied
+    /// - FInvalidObject
+    /// - FTimeout
+    ///
+    /// please see [Fatfs](http://elm-chan.org/fsw/ff/doc/rc.html#de) library to get more detail of this bindings.
+    ///
     pub fn read(
         &mut self,
         buff: &mut [u8],
@@ -178,6 +328,19 @@ impl Fil {
         }
     }
 
+    /// This function writes data to a file.
+    ///
+    /// If this function cannot write a logical volume,
+    /// it returns one of the following FResult variants.
+    /// - FOk
+    /// - FDiskErr
+    /// - FIntErr
+    /// - FDenied
+    /// - FInvalidObject
+    /// - FTimeout
+    ///
+    /// please see [Fatfs](http://elm-chan.org/fsw/ff/doc/rc.html#de) library to get more detail of this bindings.
+    ///
     pub fn write(
         &mut self,
         buff: &[u8],
@@ -200,6 +363,18 @@ impl Fil {
         }
     }
 
+    /// This function closes a opend file.
+    ///
+    /// If this function cannot close a logical volume,
+    /// it returns one of the following FResult variants.
+    /// - FOk
+    /// - FDiskErr
+    /// - FIntErr
+    /// - FInvalidObject
+    /// - FTimeout
+    ///
+    /// please see [Fatfs](http://elm-chan.org/fsw/ff/doc/rc.html#de) library to get more detail of this bindings.
+    ///
     pub fn close(&mut self) -> Result<(), FResult> {
         unsafe {
             match esys::f_close(&mut self.inner) {
