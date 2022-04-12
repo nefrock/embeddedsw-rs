@@ -21,11 +21,11 @@ pub enum DmaError {
 /// DeviceToDMA: DDR -> PS
 ///
 ///                 +------+
-///              +- |  PS  | --+
+///              +->|  PS  |---+
 ///              |  +------+   |
 /// DeviceToDMA  |             |  DMAToDevice
 ///              |  +-------+  |
-///              +->|  DDR  |<-+
+///              +--|  DDR  |<-+
 ///                 +-------+     
 ///                     ^          
 ///                     |
@@ -48,27 +48,26 @@ pub enum DmaDirection {
 /// # Example
 /// ```
 /// #
-/// #
-/// # #![no_std]
-/// # #![no_main]
-/// # #![feature(start)]
-/// # extern crate alloc;
-/// # extern crate embeddedsw_rs;
-/// # use embeddedsw_rs as xemb;
-/// # use xemb::{ println, xaxidma::{ self, XAxiDma, XAxiDmaXonfig }, raw::* };
+/// #![no_std]
+/// #![no_main]
+/// #![feature(start)]
+/// extern crate alloc;
+/// extern crate embeddedsw_rs;
+/// use embeddedsw_rs as xemb;
+/// use xemb::{ println, xaxidma::{ self, XAxiDma, XAxiDmaXonfig }, raw::* };
 /// # [panic_handler]
 /// # fn panic(info: &core::panic::PanicInfo<'_>) -> ! {
 /// #    println!("{}", info);
 /// #    loop {}
 /// # }
-/// #
-/// # #[no_mangle]
-/// # #[start]
-/// # fn main() {
+///
+/// #[no_mangle]
+/// #[start]
+/// fn main() {
 ///    // XPAR_AXI_DMA_0_DEVICE_ID is defined in parameters.h, so bindgen generates constants.
 ///    let mut axi_dma_config = XAxiDmaConfig::lookup_config(raw::XPAR_AXI_DMA_0_DEVICE_ID).unwarap();
 ///    
-/// # }
+/// }
 /// ```
 #[repr(C)]
 pub struct XAxiDmaConfig {
