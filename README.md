@@ -5,10 +5,36 @@ You can use this crate to develop baremetal application with memory safety.
 
 
 ## Installation
+1. Write the follonwing depndency in `Cargo.toml`.
 ```rust
 [dependecies]
 embeddedsw-rs = { git = "https://github.com/nefrock/embeddedsw-rs", branch = "master" }
 ```
+
+1. Prepare a linker script (e.g., `lscripts/lscript.ld`).
+
+1. Write a following settings in `.cargo/config.toml` of your projects.
+```rust
+[build]
+target = "armv7r-none-eabihf"
+
+[target.armv7r-none-eabihf]
+linker = "armr5-none-eabi-gcc"
+rustflags = [
+    "-C", "target-cpu=cortex-r5",
+    "-C", "link-arg=-mcpu=cortex-r5",
+    "-C", "link-arg=-mfpu=vfpv3-d16",
+    # ABI
+    "-C", "link-arg=-mfloat-abi=hard",
+    # linker script
+    "-C", "link-arg=-Wl,-T./lscripts/lscript.ld",
+    "-C", "link-arg=-Wl,--start-group,-lc,-lgcc,-lxil,-end-group"
+]
+```
+
+
+
+
 
 
 ## Examples
