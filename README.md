@@ -162,6 +162,7 @@ fn main(_argc: isize, _argv: *const *const u8) -> isize {
     for (i, e) in v.iter().enumerate() {
         if *e != i {
             println!("[Error] expected {}, but got {}", i, e);
+            return 0;
         }
         if (i + 1) % 10 == 0 {
             println!("poped [{}] elements", i + 1);
