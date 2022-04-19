@@ -52,7 +52,8 @@ fn main() {
     let bsp_lib_path = Path::new(&xspfm.bsp_lib_path);
 
     // Get a path to xpseudo_asm_armclangs.h
-    let xpseudo_asm_armclang_path = "./build/bsp/zynqmp_fsbl/zynqmp_fsbl_bsp/psu_cortexr5_0/libsrc/standalone_v7_5/src/arm/cortexr5/armclang/";
+    let xpseudo_asm_armclang_path_2021_1 = "./build/bsp/zynqmp_fsbl/zynqmp_fsbl_bsp/psu_cortexr5_0/libsrc/standalone_v7_5/src/arm/cortexr5/armclang/";
+    let xpseudo_asm_armclang_path_2021_2 = "./build/bsp/zynqmp_fsbl/zynqmp_fsbl_bsp/psu_cortexr5_0/libsrc/standalone_v7_6/src/arm/cortexr5/armclang/";
 
     // Generate Rust bindings
     let bind_builder = bindgen::Builder::default()
@@ -64,7 +65,8 @@ fn main() {
             "-I",
             &bsp_include_path.display().to_string(),
             "-I",
-            &xpseudo_asm_armclang_path,
+            &xpseudo_asm_armclang_path_2021_1,
+            &xpseudo_asm_armclang_path_2021_2,
         ])
         .blocklist_file("*/stdio.h")
         .blocklist_file("*/ctype.h")
