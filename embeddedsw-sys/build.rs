@@ -66,6 +66,7 @@ fn main() {
             &bsp_include_path.display().to_string(),
             "-I",
             &xpseudo_asm_armclang_path_2021_1,
+            "-I",
             &xpseudo_asm_armclang_path_2021_2,
         ])
         .blocklist_file("*/stdio.h")
