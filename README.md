@@ -115,7 +115,7 @@ fn main(_argc: isize, _argv: *const *const u8) -> isize {
     let n = 10;
     let read_bytes = fil.read(&mut buff, n).unwrap();
     for i in 0..read_bytes {
-        println("", buff[i]);
+        println("{}", buff[i]);
     }
 
     // Close the test.dat and unmount logica drive
