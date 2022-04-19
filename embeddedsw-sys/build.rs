@@ -86,6 +86,9 @@ fn main() {
             non_exhaustive: false,
         });
 
+    #[cfg(feature = "xaxidma")]
+    let bind_builder = bind_builder.header("wrapper_xaxidma.h");
+
     #[cfg(feature = "xilffs")]
     let bind_builder = bind_builder.header("wrapper_xilffs.h");
 
