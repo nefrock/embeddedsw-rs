@@ -1,0 +1,28 @@
+[package]
+name = "embeddedsw-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["kazuki ikemori (kadu-v)"]
+license = "MIT OR Apache-2.0"
+descritpion = """
+Bindings to Xilinx's zynq driver for bearmetal applications.
+"""
+readme = "README.md"
+documentation = "..."
+repository = "https://github.com/nefrock/embeddedsw-rs"
+kyewords = ["zynq", "embedded"]
+categories = ["api-bindings"]
+
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = []
+xilffs = ["embeddedsw-sys/xilffs"]
+
+[dependencies]
+embeddedsw-sys = { path = "./embeddedsw-sys" }
+
+[build-dependencies]
+xml-rs = "0.8"
