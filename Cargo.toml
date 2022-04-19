@@ -21,6 +21,7 @@ categories = ["api-bindings"]
 default = []
 xilffs = ["embeddedsw-sys/xilffs"]
 xaxidma = ["embeddedsw-sys/xaxidma"]
+xalloc = ["embeddedsw-sys/xalloc"]
 
 [dependencies]
 embeddedsw-sys = { path = "./embeddedsw-sys" }

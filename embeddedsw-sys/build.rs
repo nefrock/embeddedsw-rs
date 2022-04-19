@@ -86,6 +86,9 @@ fn main() {
             non_exhaustive: false,
         });
 
+    #[cfg(feature = "xalloc")]
+    let bind_builder = bind_builder.header("wrapper_stdlib.h");
+
     #[cfg(feature = "xaxidma")]
     let bind_builder = bind_builder.header("wrapper_xaxidma.h");
 

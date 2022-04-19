@@ -20,6 +20,7 @@ defualt = []
 xilffs = []
 xaxidma = []
 xscugic = []
+xalloc = []
 
 [dependencies]
 cty = "0.2.2"
