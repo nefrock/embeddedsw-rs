@@ -35,7 +35,6 @@ rustflags = [
    - If you want to use a `xilffs` feature, you must add the follwing option to `.cargo/config.toml`
         ```toml
         rustflags = [
-            ...
             # linker options
             "-C", "link-arg=-Wl,-lxilffs",  # new!
             "-C", "link-arg=..."
@@ -189,6 +188,11 @@ fn main(_argc: isize, _argv: *const *const u8) -> isize {
 
 If you want to more detail information about these drivers, please see doc comments and [samples repository]().
 
+
+## Tasks
+- [ ] Many drivers library are incomplete (like axidma.rs)
+- [ ] Improve build time
+- [ ] Support Cortex-A
 
 ## License
 
