@@ -190,7 +190,7 @@ If you want to more detail information about these drivers, please see doc comme
 
 
 ## Tasks
-- [ ] Many drivers library are incomplete (like axidma.rs)
+- [ ] Many driver libraries are incomplete (like axidma.rs)
 - [ ] Improve build time
 - [ ] Support Cortex-A
 
