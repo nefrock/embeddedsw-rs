@@ -3,6 +3,12 @@ Bindings to Xilinx's zynq driver for bearmetal applications.
 
 You can use this crate to develop baremetal application with memory safety.
 
+## Requirements
+This crate requires XSCT (Xilinx Software Command-Line Tool).  
+Make sure you have one of the fllowing Vitis installed:
+- Vitis v2021.1 (64-bit)
+- Vitis v2021.2 (64-bit)
+
 
 ## Installation
 1. Write the follonwing depndency in `Cargo.toml`.
