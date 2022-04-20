@@ -7,7 +7,7 @@ You can use this crate to develop baremetal application with memory safety.
 ## Installation
 1. Write the follonwing depndency in `Cargo.toml`.
 ```rust
-[dependecies]
+[dependencies]
 embeddedsw-rs = { git = "https://github.com/nefrock/embeddedsw-rs", branch = "master" }
 ```
 
@@ -187,7 +187,7 @@ fn main(_argc: isize, _argv: *const *const u8) -> isize {
 - ff.rs  
     Xilinx's FatFs library.
 
-If you want to more detail information about these drivers, please see doc comments and [samples repository]().
+If you want to more detail information about these drivers, please see doc comments and [samples repository](https://github.com/kadu-v/embeddedsw-rs-samples).
 
 
 ## Tasks
