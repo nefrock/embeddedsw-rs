@@ -193,7 +193,7 @@ fn main(_argc: isize, _argv: *const *const u8) -> isize {
 - ff.rs  
     Xilinx's FatFs library.
 
-If you want to more detail information about these drivers, please see doc comments and [samples repository](https://github.com/kadu-v/embeddedsw-rs-samples).
+If you want to more detail information about these drivers, please see doc comments and [samples repository](https://github.com/nefrock/embeddedsw-rs-samples).
 
 
 ## Tasks
